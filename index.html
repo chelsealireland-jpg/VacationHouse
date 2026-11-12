@@ -534,17 +534,21 @@ function renderHouseEditor(){
   const d = ui.draft;
   let h = `<a href="#" class="back" data-act="cancel-house">&larr; Back to houses</a>
     <div class="page-head"><div><h2 class="section-title">${ui.draftIsNew ? 'Add a house' : 'Edit house'}</h2>
-    <p class="section-note">Set the floors, then the bedrooms on each floor, then the beds in each room. Living rooms and dens can hold couches and pullouts.</p></div>
+    <p class="section-note">Set the floors, then the bedrooms on each floor, then the beds in each room. Floors are listed top to bottom, the same order they appear in the house picture, and new floors are added on top. Living rooms and dens can hold couches and pullouts.</p></div>
     <div class="btn-row"><button class="btn" data-act="cancel-house">Cancel</button><button class="btn primary" data-act="save-house">Save house</button></div></div>
     <div class="panel">
       <label class="field"><span>House name</span><input type="text" data-in="house-name" value="${esc(d.name)}" placeholder="Lakeview house"></label>
       ${stepper('Floors', d.floors.length, 'floors')}
     </div>`;
-  d.floors.forEach((f,fi) => {
+  d.floors.map((f,fi) => ({f,fi})).reverse().forEach(({f,fi}) => {
     const nBr = f.rooms.filter(r => r.kind === 'bedroom').length;
     h += `<section class="floor-edit"><div class="floor-edit-head">
       <label class="field"><span>Floor name</span><input type="text" data-in="floor-name" data-f="${fi}" value="${esc(f.name)}"></label>
       ${stepper('Bedrooms', nBr, 'bedrooms', `data-f="${fi}"`)}
+      <div class="btn-row">
+        <button type="button" class="btn" data-act="move-floor" data-f="${fi}" data-dir="1"${fi === d.floors.length - 1 ? ' disabled' : ''}>Move up</button>
+        <button type="button" class="btn" data-act="move-floor" data-f="${fi}" data-dir="-1"${fi === 0 ? ' disabled' : ''}>Move down</button>
+      </div>
     </div>`;
     f.rooms.forEach((r,ri) => {
       h += `<div class="room-edit"><div class="room-edit-head">
@@ -940,6 +944,11 @@ document.addEventListener('click', async e => {
       break;
     }
     case 'step': onStep(el); break;
+    case 'move-floor': {
+      const fl = ui.draft.floors, i = Number(el.dataset.f), j = i + Number(el.dataset.dir);
+      if(j >= 0 && j < fl.length){ [fl[i], fl[j]] = [fl[j], fl[i]]; render(); }
+      break;
+    }
     case 'add-common': ui.draft.floors[Number(el.dataset.f)].rooms.push(makeRoom('common')); render(); break;
     case 'remove-room': ui.draft.floors[Number(el.dataset.f)].rooms.splice(Number(el.dataset.r),1); render(); break;
     case 'pick-night': ui.night = el.dataset.night; render(); break;
