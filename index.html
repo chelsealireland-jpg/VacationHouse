@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>House bookings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Karla:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --charcoal:#1f1e1a;
+    --snow:#eeece4;
+    --card:#fbfaf5;
+    --cedar:#a9744a;
+    --cedar-dark:#875b39;
+    --ink:#231f1a;
+    --ink-soft:#6c6155;
+    --line:#ddd6c7;
+    --field:#bdb4a2;
+    --wine:#7c2c34;
+    --forest:#3f6b4f;
+    --amber:#7a5326;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--snow);
+    color:var(--ink);
+    font-family:'Karla', sans-serif;
+    font-size:16px;
+    line-height:1.5;
+  }
+  h1,h2,h3{font-family:'Fraunces', serif;font-weight:600;margin:0;}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 20px;}
+  :focus-visible{outline:2px solid var(--cedar-dark);outline-offset:2px;}
+
+  header.hero{
+    background:linear-gradient(180deg,#2c2a24 0%,var(--charcoal) 80%);
+    color:var(--snow);
+    padding:34px 0 0;
+  }
+  header.hero h1{font-size:clamp(30px,5vw,42px);color:#fff;}
+  header.hero p{margin:8px 0 0;max-width:56ch;color:#dad5c8;}
+  .notice{
+    margin-top:16px;
+    max-width:64ch;
+    background:rgba(255,255,255,.09);
+    color:#e9e0cc;
+    padding:10px 14px;
+    font-size:14px;
+  }
+  nav.tabs{display:flex;gap:4px;margin-top:22px;}
+  .tab{
+    background:transparent;border:0;border-bottom:3px solid transparent;
+    color:#c9bea9;font:inherit;font-weight:600;
+    padding:10px 16px;min-height:44px;cursor:pointer;
+  }
+  .tab[aria-current="page"]{color:#fff;border-bottom-color:var(--cedar);}
+
+  main{padding:32px 0 80px;}
+  .page-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:22px;}
+  .section-title{font-size:26px;}
+  .section-note{color:var(--ink-soft);font-size:15px;margin:4px 0 0;max-width:62ch;}
+  .back{display:inline-block;margin-bottom:14px;color:var(--cedar-dark);font-weight:600;}
+  .btn-row{display:flex;gap:8px;flex-wrap:wrap;}
+
+  .btn{
+    font:inherit;font-weight:600;
+    min-height:40px;padding:8px 16px;
+    background:transparent;color:var(--ink);
+    border:1px solid var(--field);cursor:pointer;
+  }
+  .btn:hover{background:#e4dfd0;}
+  .btn.primary{background:var(--cedar-dark);border-color:var(--cedar-dark);color:#fff;}
+  .btn.primary:hover{background:#6f4a2e;}
+  .btn.danger{color:var(--wine);border-color:#c9a4a8;}
+  .btn:disabled{opacity:.5;cursor:not-allowed;}
+
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
+  .card{
+    background:var(--card);border:1px solid var(--line);
+    padding:18px;text-align:left;font:inherit;color:inherit;
+  }
+  button.card{cursor:pointer;}
+  button.card:hover{border-color:var(--cedar);}
+  .card h3{font-size:20px;margin-bottom:6px;}
+  .meta{color:var(--ink-soft);font-size:14.5px;}
+  .card .btn-row{margin-top:14px;}
+  .empty{background:var(--card);border:1px dashed var(--field);padding:28px;max-width:60ch;}
+  .empty p{margin:0 0 10px;}
+
+  .panel{background:var(--card);border:1px solid var(--line);padding:18px;margin-bottom:18px;}
+
+  /* form fields */
+  .field{display:block;margin-bottom:14px;}
+  .field > span{display:block;font-weight:600;font-size:14.5px;margin-bottom:4px;}
+  input[type=text],input[type=date],select{
+    width:100%;min-height:42px;padding:8px 10px;
+    font:inherit;color:var(--ink);background:#fff;
+    border:1px solid var(--field);border-radius:0;
+  }
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .hint{color:var(--ink-soft);font-size:13.5px;margin:-6px 0 14px;}
+  .msg{min-height:22px;font-size:14.5px;margin:0 0 12px;}
+  .msg.ok{color:var(--forest);}
+  .msg.bad{color:var(--wine);}
+  .msg.warn{color:var(--amber);}
+
+  /* steppers */
+  .stepper{display:inline-flex;align-items:center;gap:8px;}
+  .stepper .stepper-label{font-weight:600;font-size:14.5px;margin-right:4px;}
+  .step{
+    width:36px;height:36px;font:inherit;font-size:20px;line-height:1;
+    background:#fff;border:1px solid var(--field);cursor:pointer;
+  }
+  .step:hover{background:#e4dfd0;}
+  .stepper output{min-width:24px;text-align:center;font-weight:700;font-family:'Fraunces',serif;font-size:18px;}
+
+  /* house editor */
+  .floor-edit{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--cedar);padding:16px;margin-bottom:16px;}
+  .floor-edit-head{display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap;margin-bottom:12px;}
+  .floor-edit-head .field{margin:0;flex:1 1 200px;}
+  .room-edit{border:1px solid var(--line);background:#f4f0e4;padding:12px;margin-top:10px;}
+  .room-edit-head{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:8px;}
+  .room-edit-head input{flex:1 1 180px;min-width:0;}
+  .bed-row{display:grid;grid-template-columns:64px 1fr 1fr 110px;gap:8px;align-items:center;margin-top:6px;}
+  .bed-row .bn{font-size:14px;color:var(--ink-soft);}
+  .editor-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+
+  /* trip view */
+  .stats{display:flex;gap:28px;flex-wrap:wrap;margin-bottom:22px;}
+  .stat{border-left:3px solid var(--cedar);padding-left:12px;}
+  .stat .num{font-family:'Fraunces',serif;font-size:26px;display:block;line-height:1.2;}
+  .stat .label{font-size:14px;color:var(--ink-soft);}
+
+  .block-title{font-size:20px;margin:30px 0 4px;}
+  .nights{display:flex;gap:6px;overflow-x:auto;padding:2px 2px 8px;}
+  .night{
+    flex:0 0 58px;min-height:68px;padding:6px 4px 6px;
+    font:inherit;text-align:center;cursor:pointer;
+    background:var(--card);color:var(--ink);border:1px solid var(--field);
+  }
+  .night .wd{display:block;font-size:12px;}
+  .night .dn{display:block;font-family:'Fraunces',serif;font-size:20px;line-height:1.15;}
+  .night .mo{display:block;font-size:11px;color:var(--ink-soft);}
+  .night .fillbar{display:block;height:4px;background:#d9d1be;margin-top:5px;}
+  .night .fillbar i{display:block;height:100%;background:var(--forest);}
+  .night[aria-pressed="true"]{background:var(--charcoal);border-color:var(--charcoal);color:#fff;}
+  .night[aria-pressed="true"] .mo{color:#c9bea9;}
+  .night[aria-pressed="true"] .fillbar{background:#5a574d;}
+  .night[aria-pressed="true"] .fillbar i{background:#8fc19f;}
+
+  .house-title{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin:18px 0 8px;}
+  .house-title h3{font-size:22px;}
+  .roof{height:52px;background:var(--charcoal);clip-path:polygon(0 100%,50% 0,100% 100%);}
+  .house-body{border:2px solid var(--charcoal);border-top:0;}
+  .floor{
+    display:grid;grid-template-columns:110px 1fr;gap:12px;
+    padding:14px;background:var(--card);
+    border-top:4px solid var(--charcoal);
+  }
+  .floor:first-child{border-top:0;}
+  .floor-label{font-family:'Fraunces',serif;font-weight:600;font-size:16px;}
+  .rooms{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;align-items:start;}
+  .room{border:1px solid var(--line);background:#f4f0e4;padding:10px;}
+  .room-name{font-weight:700;margin-bottom:8px;}
+  .beds{display:grid;gap:8px;}
+  .bed{border:1px solid var(--line);padding:8px;background:#fff;}
+  .bed.open{background:#e3ebe2;border-color:#bcd0bd;}
+  .bed.partial{background:#f3e6d3;border-color:#e0c9a6;}
+  .bed.full{background:#f0dfe0;border-color:#dcb9bc;}
+  .bed-head{
+    display:flex;justify-content:space-between;gap:8px;width:100%;
+    background:transparent;border:0;padding:0;font:inherit;text-align:left;cursor:pointer;color:var(--ink);
+  }
+  .bed-head .bl{font-weight:600;}
+  .bed-head .st{font-size:13.5px;font-weight:600;}
+  .bed.open .st{color:var(--forest);}
+  .bed.partial .st{color:var(--amber);}
+  .bed.full .st{color:var(--wine);}
+  .dots{display:flex;gap:4px;margin:6px 0 2px;}
+  .dot{width:11px;height:11px;border:2px solid var(--ink-soft);border-radius:50%;}
+  .dot.on{background:var(--ink);border-color:var(--ink);}
+  .occ{display:flex;flex-direction:column;gap:4px;margin-top:6px;}
+  .chip{
+    font:inherit;font-size:14px;text-align:left;cursor:pointer;
+    background:#fff;border:1px solid var(--field);padding:4px 8px;color:var(--ink);
+  }
+  .chip small{color:var(--ink-soft);}
+  .leaving{font-size:13px;color:var(--ink-soft);margin-top:6px;}
+
+  .scroll{overflow-x:auto;border:1px solid var(--line);background:var(--card);}
+  table{border-collapse:separate;border-spacing:0;width:100%;}
+  table.timeline th,table.timeline td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);}
+  table.timeline thead th{font-size:12px;font-weight:600;padding:4px 0;text-align:center;min-width:34px;background:var(--card);}
+  table.timeline thead th.sel,table.timeline td.sel{box-shadow:inset 2px 0 0 var(--charcoal),inset -2px 0 0 var(--charcoal);}
+  table.timeline th.rowhead{
+    position:sticky;left:0;z-index:1;background:var(--card);
+    text-align:left;font-weight:500;font-size:13.5px;padding:4px 10px;min-width:170px;white-space:nowrap;
+  }
+  table.timeline tr.grouprow th{background:#e9e4d6;font-family:'Fraunces',serif;font-weight:600;font-size:14px;text-align:left;padding:5px 10px;position:sticky;left:0;}
+  table.timeline td.cell{text-align:center;height:30px;font-size:13px;font-weight:700;cursor:pointer;}
+  td.cell.open{background:#e3ebe2;}
+  td.cell.partial{background:#f3e6d3;color:var(--amber);}
+  td.cell.full{background:#f0dfe0;color:var(--wine);}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13.5px;color:var(--ink-soft);margin:8px 0 0;}
+  .legend span::before{content:"";display:inline-block;width:12px;height:12px;margin-right:6px;vertical-align:-1px;border:1px solid var(--line);}
+  .legend .lo::before{background:#e3ebe2;}
+  .legend .lp::before{background:#f3e6d3;}
+  .legend .lf::before{background:#f0dfe0;}
+
+  table.stays th,table.stays td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);font-size:14.5px;white-space:nowrap;}
+  table.stays th{font-weight:600;background:#e9e4d6;}
+  table.stays td .btn{min-height:32px;padding:4px 10px;font-size:14px;}
+
+  footer{color:var(--ink-soft);font-size:13.5px;margin-top:44px;max-width:70ch;}
+
+  /* dialog */
+  dialog{
+    border:0;padding:0;background:var(--card);color:var(--ink);
+    width:calc(100% - 32px);max-width:520px;
+    box-shadow:0 18px 50px rgba(0,0,0,.35);
+  }
+  dialog::backdrop{background:rgba(19,18,17,.55);}
+  .dlg-body{padding:22px;max-height:90vh;overflow:auto;}
+  .dlg-body h3{font-size:22px;margin-bottom:4px;}
+  .dlg-sub{color:var(--ink-soft);font-size:14.5px;margin:0 0 16px;}
+  .dlg-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .dlg-actions .spacer{flex:1;}
+
+  #toast{
+    position:fixed;left:50%;bottom:22px;transform:translateX(-50%);
+    background:var(--charcoal);color:#fff;padding:10px 18px;font-size:14.5px;
+    max-width:calc(100% - 32px);z-index:50;display:none;
+  }
+  #toast.bad{background:var(--wine);}
+
+  @media (max-width:720px){
+    .floor{grid-template-columns:1fr;}
+    .bed-row{grid-template-columns:1fr 1fr;}
+    .bed-row .bn{grid-column:1 / -1;}
+    .field-row{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <h1>House bookings</h1>
+    <p>Build the house, set up a trip, and book beds by the night.</p>
+    <div class="notice" id="localNotice" style="display:none;">
+      This page isn't connected to the shared database, so bookings are saving to this browser only. Deploy it on Cloudflare Pages with the included function (see the README) to share them with everyone on the trip.
+    </div>
+    <nav class="tabs" aria-label="Sections">
+      <button class="tab" data-act="nav" data-view="trips">Trips</button>
+      <button class="tab" data-act="nav" data-view="houses">Houses</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap" id="app"><p class="meta">Loading…</p></main>
+
+<dialog id="dlg"></dialog>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+// ---------------------------------------------------------------------------
+// Shared storage: the Cloudflare Pages Function in functions/api/[[path]].js,
+// backed by a D1 database. On startup the page probes /api/data. If that works,
+// everything is shared; if not (opened as a file, hosted somewhere without the
+// function), it falls back to saving in this browser only.
+// ---------------------------------------------------------------------------
+const API = '/api';
+const LS_KEY = 'house-booking-v1';
+let REMOTE = false;
+
+// ---------- constants ----------
+const TYPES = {
+  'Bed':['Twin','Twin XL','Full','Queen','King','Cal King'],
+  'Bunk':['Twin','Full'],
+  'Trundle':['Twin'],
+  'Couch':['Loveseat','Sofa','Sectional'],
+  'Pullout sofa':['Full','Queen'],
+  'Air mattress':['Twin','Full','Queen'],
+  'Futon':['Full','Queen'],
+  'Cot':['Twin']
+};
+// Twins and cots sleep one person; everything else sleeps two.
+const defaultSleeps = (type,size) => (/^Twin/.test(size) || type === 'Cot') ? 1 : 2;
+function bedLabel(b){
+  if(b.type === 'Bed') return b.size + ' bed';
+  if(b.type === 'Couch') return b.size;
+  return b.size + ' ' + b.type.toLowerCase();
+}
+
+// ---------- small helpers ----------
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = () => 'i' + Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+const toArr = x => Array.isArray(x) ? x.filter(Boolean) : (x && typeof x === 'object' ? Object.values(x) : []);
+const plural = (n,w) => n + ' ' + w + (n === 1 ? '' : 's');
+const canon = v => Array.isArray(v) ? '[' + v.map(canon).join(',') + ']'
+  : (v && typeof v === 'object') ? '{' + Object.keys(v).sort().map(k => JSON.stringify(k) + ':' + canon(v[k])).join(',') + '}'
+  : JSON.stringify(v);
+
+// ---------- dates (ISO strings, UTC math so time zones never shift a day) ----------
+const DAY = 86400000;
+const toMs = iso => Date.parse(iso + 'T00:00:00Z');
+const toISO = ms => new Date(ms).toISOString().slice(0,10);
+const addDays = (iso,n) => toISO(toMs(iso) + n * DAY);
+const diffDays = (a,b) => Math.round((toMs(b) - toMs(a)) / DAY);
+function nightsOf(start,end){ const out = []; for(let d = start; d < end; d = addDays(d,1)) out.push(d); return out; }
+function fmt(iso,opts){
+  return new Date(toMs(iso)).toLocaleDateString('en-US', Object.assign({weekday:'short',month:'short',day:'numeric',timeZone:'UTC'}, opts || {}));
+}
+function fmtRange(a,b){
+  const o = {weekday:undefined};
+  return a.slice(0,4) === b.slice(0,4)
+    ? fmt(a,o) + ' to ' + fmt(b,o) + ', ' + b.slice(0,4)
+    : fmt(a,Object.assign({year:'numeric'},o)) + ' to ' + fmt(b,Object.assign({year:'numeric'},o));
+}
+function todayISO(){
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+// ---------- data ----------
+let db = { houses:{}, trips:{}, bookings:{} };
+const ui = { view:'trips', tripId:null, night:null, draft:null, draftIsNew:false };
+
+function normHouse(h){
+  h.floors = toArr(h.floors).map(f => {
+    f.rooms = toArr(f.rooms).map(r => {
+      r.beds = toArr(r.beds).map(b => { b.sleeps = Number(b.sleeps) || defaultSleeps(b.type,b.size); return b; });
+      return r;
+    });
+    return f;
+  });
+  return h;
+}
+function normDb(d){
+  const out = { houses:{}, trips:{}, bookings:{} };
+  Object.entries((d && d.houses) || {}).forEach(([k,v]) => { if(v) out.houses[k] = normHouse(v); });
+  Object.entries((d && d.trips) || {}).forEach(([k,v]) => { if(v) out.trips[k] = v; });
+  Object.entries((d && d.bookings) || {}).forEach(([k,v]) => { if(v) out.bookings[k] = Object.assign({}, v, {guests: Number(v.guests) || 1}); });
+  return out;
+}
+
+function persistLocal(){
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(db)); }
+  catch(e){ toast("Couldn't save to this browser: " + e.message, true); }
+}
+async function remote(method,coll,id,obj){
+  const opts = { method };
+  if(obj !== undefined){ opts.headers = {'Content-Type':'application/json'}; opts.body = JSON.stringify(obj); }
+  const r = await fetch(`${API}/${coll}/${encodeURIComponent(id)}`, opts);
+  if(!r.ok) throw new Error('server returned ' + r.status);
+}
+async function loadRemote(){
+  const r = await fetch(`${API}/data`, { cache:'no-store' });
+  if(!r.ok) throw new Error('server returned ' + r.status);
+  const type = r.headers.get('content-type') || '';
+  if(!type.includes('json')) throw new Error('the shared database function was not found');
+  return normDb(await r.json());
+}
+function loadLocal(){
+  try{ return normDb(JSON.parse(localStorage.getItem(LS_KEY) || 'null')); }
+  catch(e){ return normDb(null); }
+}
+const loadAll = () => REMOTE ? loadRemote() : Promise.resolve(loadLocal());
+async function save(coll,id,obj){
+  if(REMOTE) await remote('PUT',coll,id,obj);
+  db[coll][id] = obj;
+  if(!REMOTE) persistLocal();
+}
+async function removeDoc(coll,id){
+  if(REMOTE) await remote('DELETE',coll,id);
+  delete db[coll][id];
+  if(!REMOTE) persistLocal();
+}
+
+// ---------- house + booking logic ----------
+function houseBeds(h){
+  const out = [];
+  h.floors.forEach((f,fi) => f.rooms.forEach(r => r.beds.forEach(b => out.push({bed:b, room:r, floor:f, floorIndex:fi}))));
+  return out;
+}
+function houseStats(h){
+  const beds = houseBeds(h);
+  return {
+    floors: h.floors.length,
+    bedrooms: h.floors.reduce((s,f) => s + f.rooms.filter(r => r.kind === 'bedroom').length, 0),
+    beds: beds.length,
+    spots: beds.reduce((s,x) => s + x.bed.sleeps, 0)
+  };
+}
+const headcount = arr => arr.reduce((s,b) => s + b.guests, 0);
+// A booking occupies the nights from check-in up to, but not including, check-out.
+function occupants(bedId, night, list, excludeId){
+  return list.filter(b => b.bedId === bedId && b.checkIn <= night && night < b.checkOut && b.id !== excludeId);
+}
+function checkFit(bed, checkIn, checkOut, guests, list, excludeId){
+  if(guests > bed.sleeps) return { ok:false, tooSmall:true };
+  for(const n of nightsOf(checkIn, checkOut)){
+    const occ = occupants(bed.id, n, list, excludeId);
+    if(headcount(occ) + guests > bed.sleeps) return { ok:false, night:n, occ };
+  }
+  return { ok:true };
+}
+function bookingsForHouse(h){
+  const ids = new Set(houseBeds(h).map(x => x.bed.id));
+  return Object.values(db.bookings).filter(b => ids.has(b.bedId));
+}
+function validateHouseChange(oldH, newH){
+  const oldBeds = houseBeds(oldH), newBeds = houseBeds(newH);
+  const newById = new Map(newBeds.map(x => [x.bed.id, x]));
+  const all = Object.values(db.bookings);
+  for(const x of oldBeds){
+    const used = all.filter(b => b.bedId === x.bed.id);
+    if(!used.length) continue;
+    const nx = newById.get(x.bed.id);
+    if(!nx) return `${bedLabel(x.bed)} in ${x.room.name} has ${plural(used.length,'booking')}. Delete those bookings before removing the bed.`;
+    if(nx.bed.sleeps < x.bed.sleeps){
+      for(const b of used){
+        for(const n of nightsOf(b.checkIn, b.checkOut)){
+          if(headcount(occupants(x.bed.id, n, all)) > nx.bed.sleeps)
+            return `${bedLabel(nx.bed)} in ${nx.room.name} has ${headcount(occupants(x.bed.id, n, all))} people on ${fmt(n)}, so it can't sleep ${nx.bed.sleeps}.`;
+        }
+      }
+    }
+  }
+  return null;
+}
+
+// ---------- toast + dialog ----------
+let toastTimer;
+function toast(msg,bad){
+  const t = $('#toast');
+  t.textContent = msg;
+  t.className = bad ? 'bad' : '';
+  t.style.display = 'block';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.style.display = 'none'; }, bad ? 6000 : 2800);
+}
+const dlg = $('#dlg');
+function showDialog(kind,html){
+  dlg.dataset.kind = kind;
+  dlg.innerHTML = '<div class="dlg-body">' + html + '</div>';
+  if(!dlg.open) dlg.showModal();
+}
+function closeDialog(){ dlg.dataset.kind = ''; if(dlg.open) dlg.close(); }
+dlg.addEventListener('click', e => { if(e.target === dlg) closeDialog(); });
+
+// ---------- rendering ----------
+function render(){
+  const y = window.scrollY;
+  document.querySelectorAll('.tab').forEach(t => {
+    const on = (t.dataset.view === 'houses') ? (ui.view === 'houses' || ui.view === 'houseEditor') : (ui.view === 'trips' || ui.view === 'trip');
+    if(on) t.setAttribute('aria-current','page'); else t.removeAttribute('aria-current');
+  });
+  $('#localNotice').style.display = REMOTE ? 'none' : 'block';
+  const app = $('#app');
+  let html;
+  if(ui.view === 'trip') html = renderTrip();
+  else if(ui.view === 'houses') html = renderHouses();
+  else if(ui.view === 'houseEditor') html = renderHouseEditor();
+  else html = renderTrips();
+  app.innerHTML = html + footerHtml();
+  window.scrollTo(0,y);
+}
+function footerHtml(){
+  return `<footer>${REMOTE
+    ? 'Bookings and houses are shared with anyone who has this link. Anyone can edit or remove an entry, so please only change your own.'
+    : 'Everything on this page is stored in this browser until the page is deployed with its Cloudflare database.'}</footer>`;
+}
+
+function renderTrips(){
+  const trips = Object.values(db.trips).sort((a,b) => a.start.localeCompare(b.start));
+  const hasHouses = Object.keys(db.houses).length > 0;
+  let h = `<div class="page-head"><div><h2 class="section-title">Trips</h2>
+    <p class="section-note">Each trip has its own dates and uses one house. Open a trip to book beds.</p></div>
+    <button class="btn primary" data-act="add-trip">Add a trip</button></div>`;
+  if(!trips.length){
+    h += `<div class="empty"><p><strong>No trips yet.</strong></p>
+      <p>${hasHouses ? 'Add a trip to choose its dates and the house it uses.' : 'Start by adding a house, then add a trip that uses it.'}</p>
+      ${hasHouses ? '' : '<button class="btn primary" data-act="add-house">Add a house</button>'}</div>`;
+    return h;
+  }
+  h += '<div class="card-grid">' + trips.map(t => {
+    const house = db.houses[t.houseId];
+    const n = nightsOf(t.start,t.end).length;
+    const bk = Object.values(db.bookings).filter(b => b.tripId === t.id).length;
+    return `<button class="card" data-act="open-trip" data-id="${t.id}">
+      <h3>${esc(t.name)}</h3>
+      <div class="meta">${fmtRange(t.start,t.end)}</div>
+      <div class="meta">${plural(n,'night')} at ${house ? esc(house.name) : 'a removed house'}</div>
+      <div class="meta">${plural(bk,'booking')}</div></button>`;
+  }).join('') + '</div>';
+  return h;
+}
+
+function renderHouses(){
+  const houses = Object.values(db.houses).sort((a,b) => a.name.localeCompare(b.name));
+  let h = `<div class="page-head"><div><h2 class="section-title">Houses</h2>
+    <p class="section-note">Describe each house once: floors, bedrooms, and every bed, couch, and pullout. Any trip can use it.</p></div>
+    <button class="btn primary" data-act="add-house">Add a house</button></div>`;
+  if(!houses.length){
+    h += `<div class="empty"><p><strong>No houses yet.</strong></p>
+      <p>Add your house, or load a sample to see how floors, rooms, and beds fit together.</p>
+      <div class="btn-row"><button class="btn primary" data-act="add-house">Add a house</button>
+      <button class="btn" data-act="sample-house">Load a sample house</button></div></div>`;
+    return h;
+  }
+  h += '<div class="card-grid">' + houses.map(x => {
+    const s = houseStats(x);
+    return `<div class="card"><h3>${esc(x.name)}</h3>
+      <div class="meta">${plural(s.floors,'floor')}, ${plural(s.bedrooms,'bedroom')}</div>
+      <div class="meta">${plural(s.beds,'bed')}, sleeps ${s.spots}</div>
+      <div class="btn-row"><button class="btn" data-act="edit-house" data-id="${x.id}">Edit</button>
+      <button class="btn danger" data-act="delete-house" data-id="${x.id}">Delete</button></div></div>`;
+  }).join('') + '</div>';
+  return h;
+}
+
+// ----- house editor -----
+function stepper(label,val,key,extra){
+  return `<div class="stepper"><span class="stepper-label">${label}</span>
+    <button type="button" class="step" data-act="step" data-key="${key}" data-dir="-1" ${extra||''} aria-label="Fewer ${label.toLowerCase()}">&minus;</button>
+    <output>${val}</output>
+    <button type="button" class="step" data-act="step" data-key="${key}" data-dir="1" ${extra||''} aria-label="More ${label.toLowerCase()}">+</button></div>`;
+}
+function renderHouseEditor(){
+  const d = ui.draft;
+  let h = `<a href="#" class="back" data-act="cancel-house">&larr; Back to houses</a>
+    <div class="page-head"><div><h2 class="section-title">${ui.draftIsNew ? 'Add a house' : 'Edit house'}</h2>
+    <p class="section-note">Set the floors, then the bedrooms on each floor, then the beds in each room. Living rooms and dens can hold couches and pullouts.</p></div>
+    <div class="btn-row"><button class="btn" data-act="cancel-house">Cancel</button><button class="btn primary" data-act="save-house">Save house</button></div></div>
+    <div class="panel">
+      <label class="field"><span>House name</span><input type="text" data-in="house-name" value="${esc(d.name)}" placeholder="Lakeview house"></label>
+      ${stepper('Floors', d.floors.length, 'floors')}
+    </div>`;
+  d.floors.forEach((f,fi) => {
+    const nBr = f.rooms.filter(r => r.kind === 'bedroom').length;
+    h += `<section class="floor-edit"><div class="floor-edit-head">
+      <label class="field"><span>Floor name</span><input type="text" data-in="floor-name" data-f="${fi}" value="${esc(f.name)}"></label>
+      ${stepper('Bedrooms', nBr, 'bedrooms', `data-f="${fi}"`)}
+    </div>`;
+    f.rooms.forEach((r,ri) => {
+      h += `<div class="room-edit"><div class="room-edit-head">
+        <input type="text" aria-label="Room name" data-in="room-name" data-f="${fi}" data-r="${ri}" value="${esc(r.name)}">
+        ${stepper('Beds', r.beds.length, 'beds', `data-f="${fi}" data-r="${ri}"`)}
+        ${r.kind === 'common' ? `<button type="button" class="btn danger" data-act="remove-room" data-f="${fi}" data-r="${ri}">Remove room</button>` : ''}
+      </div>`;
+      r.beds.forEach((b,bi) => {
+        h += `<div class="bed-row"><span class="bn">Bed ${bi+1}</span>
+          <select aria-label="Bed ${bi+1} type" data-ch="bed-type" data-f="${fi}" data-r="${ri}" data-b="${bi}">
+            ${Object.keys(TYPES).map(t => `<option${t === b.type ? ' selected' : ''}>${t}</option>`).join('')}</select>
+          <select aria-label="Bed ${bi+1} size" data-ch="bed-size" data-f="${fi}" data-r="${ri}" data-b="${bi}">
+            ${TYPES[b.type].map(s => `<option${s === b.size ? ' selected' : ''}>${s}</option>`).join('')}</select>
+          <select aria-label="Bed ${bi+1} sleeps" data-ch="bed-sleeps" data-f="${fi}" data-r="${ri}" data-b="${bi}">
+            <option value="1"${b.sleeps === 1 ? ' selected' : ''}>Sleeps 1</option>
+            <option value="2"${b.sleeps === 2 ? ' selected' : ''}>Sleeps 2</option></select></div>`;
+      });
+      h += '</div>';
+    });
+    h += `<div class="editor-actions"><button type="button" class="btn" data-act="add-common" data-f="${fi}">Add a living area</button></div></section>`;
+  });
+  h += `<div class="btn-row"><button class="btn" data-act="cancel-house">Cancel</button><button class="btn primary" data-act="save-house">Save house</button></div>`;
+  return h;
+}
+
+function makeBed(proto){ const type = proto ? proto.type : 'Bed', size = proto ? proto.size : 'Queen'; return { id:uid(), type, size, sleeps:defaultSleeps(type,size) }; }
+function makeRoom(kind,n){
+  return kind === 'common'
+    ? { id:uid(), name:'Living room', kind:'common', beds:[{ id:uid(), type:'Couch', size:'Sofa', sleeps:2 }] }
+    : { id:uid(), name:'Bedroom ' + n, kind:'bedroom', beds:[makeBed()] };
+}
+const countBedrooms = d => d.floors.reduce((s,f) => s + f.rooms.filter(r => r.kind === 'bedroom').length, 0);
+function makeFloor(n,bedroomsSoFar){ return { id:uid(), name:'Floor ' + n, rooms:[makeRoom('bedroom', bedroomsSoFar + 1)] }; }
+function newHouseDraft(){ return { id:uid(), name:'', floors:[makeFloor(1,0)] }; }
+
+function onStep(el){
+  const d = ui.draft, key = el.dataset.key, dir = Number(el.dataset.dir);
+  const f = d.floors[Number(el.dataset.f)];
+  const r = f ? f.rooms[Number(el.dataset.r)] : null;
+  if(key === 'floors'){
+    if(dir > 0){ if(d.floors.length < 8) d.floors.push(makeFloor(d.floors.length + 1, countBedrooms(d))); }
+    else if(d.floors.length > 1) d.floors.pop();
+  } else if(key === 'bedrooms' && f){
+    const n = f.rooms.filter(x => x.kind === 'bedroom').length;
+    if(dir > 0){ if(n < 15) f.rooms.splice(n, 0, makeRoom('bedroom', countBedrooms(d) + 1)); }
+    else if(n > 0) f.rooms.splice(n - 1, 1);
+  } else if(key === 'beds' && r){
+    const min = r.kind === 'bedroom' ? 1 : 0;
+    if(dir > 0){ if(r.beds.length < 8) r.beds.push(makeBed(r.beds[r.beds.length - 1])); }
+    else if(r.beds.length > min) r.beds.pop();
+  }
+  render();
+}
+
+async function saveHouse(){
+  const d = ui.draft, name = d.name.trim();
+  if(!name) return toast('Give the house a name.', true);
+  const c = JSON.parse(JSON.stringify(d));
+  c.name = name;
+  c.floors.forEach((f,i) => { f.name = f.name.trim() || 'Floor ' + (i+1); f.rooms.forEach((r,j) => { r.name = r.name.trim() || 'Room ' + (j+1); }); });
+  if(!houseBeds(c).length) return toast('Add at least one bed.', true);
+  if(!ui.draftIsNew){
+    const err = validateHouseChange(db.houses[c.id], c);
+    if(err) return toast(err, true);
+  }
+  try{
+    await save('houses', c.id, c);
+    toast('House saved.');
+    ui.view = 'houses'; ui.draft = null;
+    render();
+  }catch(e){ toast("Couldn't save the house: " + e.message, true); }
+}
+
+function sampleHouse(){
+  const bed = (type,size) => ({ id:uid(), type, size, sleeps:defaultSleeps(type,size) });
+  const room = (name,kind,beds) => ({ id:uid(), name, kind, beds });
+  return normHouse({
+    id: uid(), name: 'Lakeview house',
+    floors: [
+      { id:uid(), name:'Ground floor', rooms:[
+        room('Bedroom 1','bedroom',[bed('Bed','Queen')]),
+        room('Bedroom 2','bedroom',[bed('Bed','Twin'), bed('Bed','Twin')]),
+        room('Living room','common',[bed('Pullout sofa','Queen'), bed('Couch','Sofa')]) ]},
+      { id:uid(), name:'Upstairs', rooms:[
+        room('Primary bedroom','bedroom',[bed('Bed','King')]),
+        room('Bunk room','bedroom',[bed('Bunk','Twin'), bed('Bunk','Twin'), bed('Bunk','Twin'), bed('Bunk','Twin')]),
+        room('Loft','common',[bed('Air mattress','Queen')]) ]}
+    ]
+  });
+}
+
+// ----- trip view -----
+function renderTrip(){
+  const t = db.trips[ui.tripId];
+  if(!t){ ui.view = 'trips'; return renderTrips(); }
+  const house = db.houses[t.houseId];
+  const nights = nightsOf(t.start, t.end);
+  if(!ui.night || !nights.includes(ui.night)){ const td = todayISO(); ui.night = nights.includes(td) ? td : nights[0]; }
+  let h = `<a href="#" class="back" data-act="back-trips">&larr; All trips</a>
+    <div class="page-head"><div><h2 class="section-title">${esc(t.name)}</h2>
+    <p class="section-note">${fmtRange(t.start,t.end)}, ${plural(nights.length,'night')} at ${house ? esc(house.name) : 'a house that was removed'}.</p></div>
+    <div class="btn-row"><button class="btn" data-act="edit-trip">Edit trip</button>
+    <button class="btn primary" data-act="new-booking"${house ? '' : ' disabled'}>Book a bed</button></div></div>`;
+  if(!house) return h + '<div class="empty"><p>The house for this trip was deleted. Edit the trip to choose another house.</p></div>';
+
+  const beds = houseBeds(house);
+  const all = bookingsForHouse(house);
+  const spots = beds.reduce((s,x) => s + x.bed.sleeps, 0);
+  const fillOn = n => headcount(all.filter(b => b.checkIn <= n && n < b.checkOut));
+  const night = ui.night;
+  const tripBookings = all.filter(b => b.tripId === t.id).sort((a,b) => a.checkIn.localeCompare(b.checkIn) || a.name.localeCompare(b.name));
+
+  h += `<div class="stats">
+    <div class="stat"><span class="num">${nights.length}</span><span class="label">nights</span></div>
+    <div class="stat"><span class="num">${spots}</span><span class="label">spots in the house</span></div>
+    <div class="stat"><span class="num">${fillOn(night)} of ${spots}</span><span class="label">filled on ${fmt(night)}</span></div>
+  </div>`;
+
+  h += `<h3 class="block-title">Pick a night</h3><p class="section-note">The bar under each date shows how full the house is that night.</p>
+    <div class="nights" role="group" aria-label="Nights">` + nights.map(n => {
+    const pct = spots ? Math.min(100, Math.round(fillOn(n) / spots * 100)) : 0;
+    const d = new Date(toMs(n));
+    return `<button class="night" data-act="pick-night" data-night="${n}" aria-pressed="${n === night}" title="${fmt(n)}: ${fillOn(n)} of ${spots} filled">
+      <span class="wd">${fmt(n,{month:undefined,day:undefined})}</span>
+      <span class="dn">${d.getUTCDate()}</span>
+      <span class="mo">${fmt(n,{weekday:undefined,day:undefined})}</span>
+      <span class="fillbar"><i style="width:${pct}%"></i></span></button>`;
+  }).join('') + '</div>';
+
+  // cutaway
+  h += `<div class="house-title"><h3>${esc(house.name)}</h3><span class="meta">Night of ${fmt(night)}. Select a bed to book it.</span></div>
+    <div class="roof" aria-hidden="true"></div><div class="house-body">`;
+  house.floors.slice().reverse().forEach(f => {
+    h += `<div class="floor"><div class="floor-label">${esc(f.name)}</div><div class="rooms">`;
+    f.rooms.forEach(r => {
+      h += `<div class="room"><div class="room-name">${esc(r.name)}</div><div class="beds">`;
+      r.beds.forEach(b => {
+        const occ = occupants(b.id, night, all);
+        const n = headcount(occ);
+        const state = n === 0 ? 'open' : (n >= b.sleeps ? 'full' : 'partial');
+        const status = state === 'open' ? 'Open' : (state === 'full' ? 'Full' : `${n} of ${b.sleeps}`);
+        const leaving = all.filter(x => x.bedId === b.id && x.checkOut === night);
+        h += `<div class="bed ${state}">
+          <button class="bed-head" data-act="book-bed" data-bed="${b.id}" aria-label="Book ${esc(bedLabel(b))} in ${esc(r.name)}, ${status}">
+            <span class="bl">${esc(bedLabel(b))}</span><span class="st">${status}</span></button>
+          <div class="dots" aria-hidden="true">${Array.from({length:b.sleeps}, (_,i) => `<span class="dot${i < n ? ' on' : ''}"></span>`).join('')}</div>
+          ${occ.length ? '<div class="occ">' + occ.map(o => `<button class="chip" data-act="edit-booking" data-id="${o.id}" title="${fmt(o.checkIn)} to ${fmt(o.checkOut)}">${esc(o.name)}${o.guests > 1 ? ' <small>(2 people)</small>' : ''}</button>`).join('') + '</div>' : ''}
+          ${leaving.length ? `<div class="leaving">Checked out this morning: ${leaving.map(x => esc(x.name)).join(', ')}</div>` : ''}
+        </div>`;
+      });
+      h += '</div></div>';
+    });
+    h += '</div></div>';
+  });
+  h += '</div>';
+
+  // timeline
+  h += `<h3 class="block-title">Whole trip at a glance</h3>
+    <p class="section-note">Each cell is the number of people in that bed for the night. Select a cell to jump to that night.</p>
+    <div class="scroll"><table class="timeline"><thead><tr><th class="rowhead"></th>` +
+    nights.map(n => `<th class="${n === night ? 'sel' : ''}" scope="col">${new Date(toMs(n)).getUTCDate()}<br><span class="meta">${fmt(n,{month:undefined,day:undefined}).slice(0,2)}</span></th>`).join('') + '</tr></thead><tbody>';
+  house.floors.slice().reverse().forEach(f => {
+    h += `<tr class="grouprow"><th colspan="${nights.length + 1}" scope="colgroup">${esc(f.name)}</th></tr>`;
+    f.rooms.forEach(r => r.beds.forEach(b => {
+      h += `<tr><th class="rowhead" scope="row">${esc(r.name)}, ${esc(bedLabel(b))}</th>` + nights.map(n => {
+        const occ = occupants(b.id, n, all), c = headcount(occ);
+        const st = c === 0 ? 'open' : (c >= b.sleeps ? 'full' : 'partial');
+        return `<td class="cell ${st}${n === night ? ' sel' : ''}" data-act="pick-night" data-night="${n}" title="${esc(fmt(n) + ': ' + (occ.map(o => o.name).join(', ') || 'open'))}">${c || ''}</td>`;
+      }).join('') + '</tr>';
+    }));
+  });
+  h += `</tbody></table></div><div class="legend"><span class="lo">Open</span><span class="lp">Partly filled</span><span class="lf">Full</span></div>`;
+
+  // stays
+  h += `<h3 class="block-title">Everyone's stays</h3>`;
+  if(!tripBookings.length) h += '<div class="empty"><p>No one has booked a bed yet. Select a bed above, or use Book a bed.</p></div>';
+  else {
+    const byId = new Map(beds.map(x => [x.bed.id, x]));
+    h += `<div class="scroll"><table class="stays"><thead><tr><th>Name</th><th>Bed</th><th>Check in</th><th>Check out</th><th>Nights</th><th>People</th><th></th></tr></thead><tbody>` +
+      tripBookings.map(b => {
+        const x = byId.get(b.bedId);
+        return `<tr><td>${esc(b.name)}</td><td>${x ? esc(x.room.name) + ', ' + esc(bedLabel(x.bed)) : 'Removed bed'}</td><td>${fmt(b.checkIn)}</td><td>${fmt(b.checkOut)}</td><td>${diffDays(b.checkIn,b.checkOut)}</td><td>${b.guests}</td>
+          <td><button class="btn" data-act="edit-booking" data-id="${b.id}">Edit</button></td></tr>`;
+      }).join('') + '</tbody></table></div>';
+  }
+  return h;
+}
+
+// ---------- trip dialog ----------
+function openTrip(id){
+  const t = id ? db.trips[id] : null;
+  const houses = Object.values(db.houses).sort((a,b) => a.name.localeCompare(b.name));
+  if(!houses.length){
+    showDialog('info', `<h3>Add a house first</h3><p class="dlg-sub">A trip uses one house, so the beds people can book come from it.</p>
+      <div class="dlg-actions"><button class="btn" data-act="dlg-close">Close</button><span class="spacer"></span><button class="btn primary" data-act="go-add-house">Add a house</button></div>`);
+    return;
+  }
+  const hasBookings = t && Object.values(db.bookings).some(b => b.tripId === t.id);
+  showDialog('trip', `<h3>${t ? 'Edit trip' : 'Add a trip'}</h3>
+    <p class="dlg-sub">Pick the dates and the house. Nights run from the arrive date up to the night before the depart date.</p>
+    <form id="trip-form" novalidate>
+      <label class="field"><span>Trip name</span><input type="text" id="tp-name" value="${esc(t ? t.name : '')}" placeholder="February ski week"></label>
+      <div class="field-row">
+        <label class="field"><span>Arrive</span><input type="date" id="tp-start" value="${t ? t.start : ''}"></label>
+        <label class="field"><span>Depart</span><input type="date" id="tp-end" value="${t ? t.end : ''}"></label>
+      </div>
+      <label class="field"><span>House</span><select id="tp-house"${hasBookings ? ' disabled' : ''}>
+        ${houses.map(x => `<option value="${x.id}"${t && t.houseId === x.id ? ' selected' : ''}>${esc(x.name)}</option>`).join('')}</select></label>
+      ${hasBookings ? '<p class="hint">The house is locked because this trip already has bookings.</p>' : ''}
+      <p class="msg" id="tp-msg" role="status"></p>
+      <div class="dlg-actions">
+        ${t ? '<button type="button" class="btn danger" data-act="trip-delete">Delete trip</button>' : ''}
+        <span class="spacer"></span>
+        <button type="button" class="btn" data-act="dlg-close">Cancel</button>
+        <button type="submit" class="btn primary">${t ? 'Save trip' : 'Add trip'}</button>
+      </div></form>`);
+  dlg.dataset.id = id || '';
+  refreshTripDialog();
+}
+function setMsg(id,text,cls){ const m = $(id); if(m){ m.textContent = text; m.className = 'msg' + (cls ? ' ' + cls : ''); } }
+function refreshTripDialog(){
+  const start = $('#tp-start').value, end = $('#tp-end').value, houseId = $('#tp-house').value, id = dlg.dataset.id;
+  if(start && end && end <= start) return setMsg('#tp-msg','The depart date must be after the arrive date.','bad');
+  if(start && end){
+    const clash = Object.values(db.trips).find(x => x.id !== id && x.houseId === houseId && x.start < end && start < x.end);
+    if(clash) return setMsg('#tp-msg', `Heads up: "${clash.name}" uses this house on overlapping dates, so the beds are shared between the two trips.`, 'warn');
+    return setMsg('#tp-msg', plural(nightsOf(start,end).length,'night') + '.', 'ok');
+  }
+  setMsg('#tp-msg','');
+}
+async function submitTrip(){
+  const id = dlg.dataset.id, old = id ? db.trips[id] : null;
+  const name = $('#tp-name').value.trim(), start = $('#tp-start').value, end = $('#tp-end').value, houseId = $('#tp-house').value;
+  if(!name) return setMsg('#tp-msg','Give the trip a name.','bad');
+  if(!start || !end) return setMsg('#tp-msg','Choose both an arrive and a depart date.','bad');
+  if(end <= start) return setMsg('#tp-msg','The depart date must be after the arrive date.','bad');
+  if(old){
+    const out = Object.values(db.bookings).filter(b => b.tripId === old.id && (b.checkIn < start || b.checkOut > end));
+    if(out.length) return setMsg('#tp-msg', `${plural(out.length,'booking')} fall outside these dates. Edit or delete them first.`, 'bad');
+  }
+  const trip = { id: old ? old.id : uid(), name, start, end, houseId: old ? old.houseId : houseId };
+  if(old && !$('#tp-house').disabled) trip.houseId = houseId;
+  try{
+    await save('trips', trip.id, trip);
+    closeDialog();
+    ui.tripId = trip.id; ui.view = 'trip'; ui.night = null;
+    render(); window.scrollTo(0,0);
+    toast(old ? 'Trip saved.' : 'Trip added.');
+  }catch(e){ setMsg('#tp-msg', "Couldn't save: " + e.message, 'bad'); }
+}
+async function deleteTrip(){
+  const id = dlg.dataset.id, t = db.trips[id];
+  if(!t) return;
+  const mine = Object.values(db.bookings).filter(b => b.tripId === id);
+  if(!confirm(`Delete "${t.name}" and its ${plural(mine.length,'booking')}? This can't be undone.`)) return;
+  try{
+    for(const b of mine) await removeDoc('bookings', b.id);
+    await removeDoc('trips', id);
+    closeDialog(); ui.view = 'trips'; ui.tripId = null; render();
+    toast('Trip deleted.');
+  }catch(e){ toast("Couldn't delete: " + e.message, true); }
+}
+
+// ---------- booking dialog ----------
+let bk = null;
+function openBooking(opts){
+  const t = db.trips[ui.tripId], house = db.houses[t.houseId];
+  const beds = houseBeds(house);
+  const existing = opts.bookingId ? db.bookings[opts.bookingId] : null;
+  const bedId = existing ? existing.bedId : (opts.bedId || beds[0].bed.id);
+  const ci = existing ? existing.checkIn : (opts.night || ui.night);
+  const co = existing ? existing.checkOut : addDays(ci,1);
+  bk = { t, house, beds, existingId: existing ? existing.id : null };
+  let opt = '';
+  house.floors.slice().reverse().forEach(f => f.rooms.forEach(r => {
+    if(!r.beds.length) return;
+    opt += `<optgroup label="${esc(f.name)}, ${esc(r.name)}">` + r.beds.map(b => `<option value="${b.id}"${b.id === bedId ? ' selected' : ''}>${esc(bedLabel(b))}</option>`).join('') + '</optgroup>';
+  }));
+  showDialog('booking', `<h3>${existing ? 'Edit booking' : 'Book a bed'}</h3>
+    <p class="dlg-sub">${esc(t.name)}: first night ${fmt(t.start)}, depart ${fmt(t.end)}.</p>
+    <form id="bk-form" novalidate>
+      <label class="field"><span>Name</span><input type="text" id="bk-name" value="${esc(existing ? existing.name : '')}" placeholder="Dana, or Dana and Sam"></label>
+      <label class="field"><span>Bed</span><select id="bk-bed">${opt}</select></label>
+      <div class="field-row">
+        <label class="field"><span>Check in</span><input type="date" id="bk-in" value="${ci}" min="${t.start}" max="${addDays(t.end,-1)}"></label>
+        <label class="field"><span>Check out</span><input type="date" id="bk-out" value="${co}" min="${addDays(t.start,1)}" max="${t.end}"></label>
+      </div>
+      <label class="field"><span>People in this bed</span><select id="bk-guests"></select></label>
+      <p class="msg" id="bk-msg" role="status"></p>
+      <div class="dlg-actions">
+        ${existing ? '<button type="button" class="btn danger" data-act="bk-delete">Delete booking</button>' : ''}
+        <span class="spacer"></span>
+        <button type="button" class="btn" data-act="dlg-close">Cancel</button>
+        <button type="submit" class="btn primary" id="bk-save">${existing ? 'Save changes' : 'Save booking'}</button>
+      </div></form>`);
+  $('#bk-guests').dataset.want = existing ? existing.guests : 1;
+  fillGuests();
+  refreshBooking();
+  if(!existing) $('#bk-name').focus();
+}
+function selectedBed(){ const id = $('#bk-bed').value; return bk.beds.find(x => x.bed.id === id).bed; }
+function fillGuests(){
+  const bed = selectedBed(), g = $('#bk-guests');
+  const want = Number(g.value || g.dataset.want || 1);
+  g.innerHTML = Array.from({length:bed.sleeps}, (_,i) => `<option value="${i+1}">${i === 0 ? '1 person' : (i+1) + ' people'}</option>`).join('');
+  g.value = String(want <= bed.sleeps ? want : 1);
+}
+function refreshBooking(){
+  const ci = $('#bk-in').value, co = $('#bk-out').value;
+  const guests = Number($('#bk-guests').value) || 1;
+  const all = bookingsForHouse(bk.house);
+  const bed = selectedBed();
+  const valid = ci && co && ci >= bk.t.start && co <= bk.t.end && co > ci;
+  // label every bed with its status for these dates
+  bk.beds.forEach(x => {
+    const o = $('#bk-bed').querySelector(`option[value="${x.bed.id}"]`);
+    let s = '';
+    if(valid){
+      const f = checkFit(x.bed, ci, co, guests, all, bk.existingId);
+      s = f.ok ? 'open' : (f.tooSmall ? 'too small' : 'not available');
+    }
+    o.textContent = bedLabel(x.bed) + ' (sleeps ' + x.bed.sleeps + (s ? ', ' + s : '') + ')';
+  });
+  const save = $('#bk-save');
+  if(!valid){
+    setMsg('#bk-msg','Check out must be after check in, and both dates must fall within the trip.','bad');
+    save.disabled = true; return;
+  }
+  const fit = checkFit(bed, ci, co, guests, all, bk.existingId);
+  if(!fit.ok){
+    setMsg('#bk-msg', `${bedLabel(bed)} is full on ${fmt(fit.night)}${fit.occ && fit.occ.length ? ' (' + fit.occ.map(o => o.name).join(', ') + ')' : ''}. Choose other dates or another bed.`, 'bad');
+    save.disabled = true; return;
+  }
+  setMsg('#bk-msg', `${plural(diffDays(ci,co),'night')}, ${fmt(ci)} to ${fmt(co)}. The bed opens up again the night of ${fmt(co)}.`, 'ok');
+  save.disabled = false;
+}
+async function submitBooking(){
+  const name = $('#bk-name').value.trim();
+  if(!name){ setMsg('#bk-msg','Enter a name for this booking.','bad'); $('#bk-name').focus(); return; }
+  try{ if(REMOTE) db = await loadAll(); }catch(e){ /* fall through; the save will report a real failure */ }
+  const ci = $('#bk-in').value, co = $('#bk-out').value, guests = Number($('#bk-guests').value) || 1;
+  const bed = selectedBed();
+  const fit = checkFit(bed, ci, co, guests, bookingsForHouse(bk.house), bk.existingId);
+  if(!fit.ok){ refreshBooking(); return; }
+  const b = { id: bk.existingId || uid(), tripId: bk.t.id, bedId: bed.id, name, checkIn: ci, checkOut: co, guests };
+  try{
+    await save('bookings', b.id, b);
+    closeDialog();
+    ui.night = ci;
+    render();
+    toast(bk.existingId ? 'Booking updated.' : 'Booked.');
+  }catch(e){ setMsg('#bk-msg', "Couldn't save: " + e.message, 'bad'); }
+}
+async function deleteBooking(){
+  if(!bk.existingId) return;
+  const b = db.bookings[bk.existingId];
+  if(!confirm(`Delete the booking for ${b ? b.name : 'this guest'}?`)) return;
+  try{ await removeDoc('bookings', bk.existingId); closeDialog(); render(); toast('Booking deleted.'); }
+  catch(e){ setMsg('#bk-msg', "Couldn't delete: " + e.message, 'bad'); }
+}
+
+// ---------- events ----------
+document.addEventListener('click', async e => {
+  const el = e.target.closest('[data-act]');
+  if(!el) return;
+  const act = el.dataset.act;
+  if(el.tagName === 'A') e.preventDefault();
+  switch(act){
+    case 'nav': ui.view = el.dataset.view; ui.tripId = null; render(); window.scrollTo(0,0); break;
+    case 'add-trip': openTrip(); break;
+    case 'open-trip': ui.tripId = el.dataset.id; ui.view = 'trip'; ui.night = null; render(); window.scrollTo(0,0); break;
+    case 'back-trips': ui.view = 'trips'; ui.tripId = null; render(); break;
+    case 'edit-trip': openTrip(ui.tripId); break;
+    case 'trip-delete': deleteTrip(); break;
+    case 'add-house': ui.draft = newHouseDraft(); ui.draftIsNew = true; ui.view = 'houseEditor'; render(); window.scrollTo(0,0); break;
+    case 'go-add-house': closeDialog(); ui.draft = newHouseDraft(); ui.draftIsNew = true; ui.view = 'houseEditor'; render(); window.scrollTo(0,0); break;
+    case 'edit-house': ui.draft = JSON.parse(JSON.stringify(db.houses[el.dataset.id])); ui.draftIsNew = false; ui.view = 'houseEditor'; render(); window.scrollTo(0,0); break;
+    case 'cancel-house': ui.draft = null; ui.view = 'houses'; render(); break;
+    case 'save-house': saveHouse(); break;
+    case 'sample-house': {
+      const s = sampleHouse();
+      try{ await save('houses', s.id, s); render(); toast('Sample house added.'); }
+      catch(err){ toast("Couldn't save: " + err.message, true); }
+      break;
+    }
+    case 'delete-house': {
+      const id = el.dataset.id, x = db.houses[id];
+      const used = Object.values(db.trips).filter(t => t.houseId === id);
+      if(used.length){ toast(`${x.name} is used by ${plural(used.length,'trip')}. Delete or change those trips first.`, true); break; }
+      if(!confirm(`Delete ${x.name}? This can't be undone.`)) break;
+      try{ await removeDoc('houses', id); render(); toast('House deleted.'); }
+      catch(err){ toast("Couldn't delete: " + err.message, true); }
+      break;
+    }
+    case 'step': onStep(el); break;
+    case 'add-common': ui.draft.floors[Number(el.dataset.f)].rooms.push(makeRoom('common')); render(); break;
+    case 'remove-room': ui.draft.floors[Number(el.dataset.f)].rooms.splice(Number(el.dataset.r),1); render(); break;
+    case 'pick-night': ui.night = el.dataset.night; render(); break;
+    case 'book-bed': openBooking({ bedId: el.dataset.bed, night: ui.night }); break;
+    case 'new-booking': openBooking({ night: ui.night }); break;
+    case 'edit-booking': openBooking({ bookingId: el.dataset.id }); break;
+    case 'bk-delete': deleteBooking(); break;
+    case 'dlg-close': closeDialog(); break;
+  }
+});
+
+document.addEventListener('input', e => {
+  const t = e.target, d = ui.draft;
+  if(t.dataset.in && d){
+    if(t.dataset.in === 'house-name') d.name = t.value;
+    else if(t.dataset.in === 'floor-name') d.floors[Number(t.dataset.f)].name = t.value;
+    else if(t.dataset.in === 'room-name') d.floors[Number(t.dataset.f)].rooms[Number(t.dataset.r)].name = t.value;
+  }
+});
+document.addEventListener('change', e => {
+  const t = e.target, d = ui.draft;
+  if(t.dataset.ch && d){
+    const b = d.floors[Number(t.dataset.f)].rooms[Number(t.dataset.r)].beds[Number(t.dataset.b)];
+    if(t.dataset.ch === 'bed-type'){ b.type = t.value; b.size = TYPES[b.type][0]; b.sleeps = defaultSleeps(b.type,b.size); render(); }
+    else if(t.dataset.ch === 'bed-size'){ b.size = t.value; b.sleeps = defaultSleeps(b.type,b.size); render(); }
+    else if(t.dataset.ch === 'bed-sleeps'){ b.sleeps = Number(t.value); }
+  }
+});
+dlg.addEventListener('input', () => { if(dlg.dataset.kind === 'booking') refreshBooking(); else if(dlg.dataset.kind === 'trip') refreshTripDialog(); });
+dlg.addEventListener('change', e => {
+  if(dlg.dataset.kind === 'booking'){ if(e.target.id === 'bk-bed') fillGuests(); refreshBooking(); }
+  else if(dlg.dataset.kind === 'trip') refreshTripDialog();
+});
+dlg.addEventListener('submit', e => {
+  e.preventDefault();
+  if(dlg.dataset.kind === 'booking') submitBooking();
+  else if(dlg.dataset.kind === 'trip') submitTrip();
+});
+
+// ---------- start ----------
+async function init(){
+  try{ db = await loadRemote(); REMOTE = true; }
+  catch(e){ REMOTE = false; db = loadLocal(); }
+  render();
+  if(REMOTE){
+    const refresh = async () => {
+      if(document.hidden || dlg.open || ui.view === 'houseEditor') return;
+      try{
+        const fresh = await loadAll();
+        if(canon(fresh) !== canon(db)){ db = fresh; render(); }
+      }catch(e){ /* try again on the next tick */ }
+    };
+    setInterval(refresh, 15000);
+    document.addEventListener('visibilitychange', refresh);
+  }
+}
+init();
+</script>
+</body>
+</html>
